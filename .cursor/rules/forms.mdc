@@ -1,0 +1,72 @@
+---
+description: React Hook Form setup, Zod validation, controlled form components, and form submission patterns
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# How to work with forms
+
+## Form Definition
+
+```typescript
+const methods = useForm<FormValues>({
+  defaultValues: {
+    field1: '',
+    field2: false,
+    field3: undefined,
+  },
+  resolver: zodResolver(formSchema),
+});
+
+const { handleSubmit, reset, setValue } = methods;
+```
+
+## Form Validation
+
+Use Zod schemas with validation messages from `@/modules/common/constants/validations`:
+
+```typescript
+const formSchema = z.object({
+  nickname: z.string().trim().max(50, validations.maxLength50),
+  email: z.string().email(validations.email),
+  isAgreed: z.boolean().refine((val) => val === true, {
+    message: validations.requiredField,
+  }),
+});
+```
+
+## Built-in Form Components
+
+Always use pre-built controlled components:
+
+- `TextField` - text inputs
+- `CustomCheckbox` - checkboxes
+- `CustomRadioGroup` - radio groups
+- `ControlledSelect` - select dropdowns
+- `ControlledCombobox` - searchable select
+- `ControlledMultiSelect` - multi-select
+- `TextArea` - text areas
+- `NumberField` - number inputs
+- `MaskedTextField` - masked inputs
+- `FileUpload` - file uploads
+- `ButtonLoading` - submit buttons with loading state
+
+## Form Submission
+
+```typescript
+<Form {...methods}>
+  <form
+    onSubmit={handleSubmit(handleFormSubmit, scrollToError)}
+    className="grid gap-4"
+  >
+    <TextField name="nickname" label="Nickname" />
+    <CustomCheckbox
+      name="isAgreed"
+      label="I agree to terms"
+    />
+    <ButtonLoading type="submit" loading={isLoading}>
+      Submit
+    </ButtonLoading>
+  </form>
+</Form>
+```

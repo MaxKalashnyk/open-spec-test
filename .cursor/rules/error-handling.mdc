@@ -1,0 +1,57 @@
+---
+description: Error handling patterns, try-catch usage, API error processing, and error message extraction
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# How to work with Error handling
+
+## Generic rules
+
+- Always raise errors explicitly, never silently ignore them
+- Use specific error types that clearly indicate what went wrong
+- Avoid catch-all exception handlers that hide the root cause
+- Error messages should be clear and actionable
+- NO FALLBACKS: Never mask errors with fallback mechanisms - work with user to fix the main flow explicitly
+- Transparent debugging: When something fails, show exactly what went wrong and why
+- Fix root causes, not symptoms - fallbacks hide real problems that need solving
+
+## Try-Catch Pattern
+
+Always use try-catch in async operations:
+
+```typescript
+const handleOperation = async (data: DataType) => {
+  try {
+    const result = await apiCall(data);
+
+    if (!result) {
+      throw new Error('Operation failed.');
+    }
+
+    return { success: true, data: result };
+  } catch (error: any) {
+    return { success: false, error: error?.message || 'Unknown error' };
+  }
+};
+```
+
+## API Result Processing
+
+Check for `success: true` pattern:
+
+```typescript
+const result = await handleUpdate(data);
+
+if (!result?.success) {
+  throw new Error(result?.error || 'Update failed');
+}
+
+toast.success('Updated successfully');
+```
+
+## Error Messages
+
+- Use `extractErrorMessage` utility from `@/utils/process-api-error` for consistent error handling
+- Error toasts are automatically shown by axios interceptor
+- Success toasts should be explicitly added: `toast.success('Operation successful')`

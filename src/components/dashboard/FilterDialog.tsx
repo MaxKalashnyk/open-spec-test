@@ -1,3 +1,4 @@
+import { useState, useEffect, useMemo } from 'react';
 import { useDashboardStore } from '@/stores/dashboard-store';
 import {
   Dialog,
@@ -16,7 +17,6 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { useMemo } from 'react';
 import type { Project } from '@/types/project';
 
 interface FilterDialogProps {
@@ -30,6 +30,28 @@ export function FilterDialog({ open, onOpenChange }: FilterDialogProps) {
   const setProjectManagerFilter = useDashboardStore((state) => state.setProjectManagerFilter);
   const setDateRangeFilter = useDashboardStore((state) => state.setDateRangeFilter);
   const clearFilters = useDashboardStore((state) => state.clearFilters);
+
+  // Local state for filter values (only applied when user clicks Apply)
+  const [localFilters, setLocalFilters] = useState({
+    projectManager: filters.projectManager,
+    dateRange: {
+      start: filters.dateRange.start,
+      end: filters.dateRange.end,
+    },
+  });
+
+  // Initialize local filters from store when dialog opens
+  useEffect(() => {
+    if (open) {
+      setLocalFilters({
+        projectManager: filters.projectManager,
+        dateRange: {
+          start: filters.dateRange.start,
+          end: filters.dateRange.end,
+        },
+      });
+    }
+  }, [open, filters.projectManager, filters.dateRange.start, filters.dateRange.end]);
 
   // Get unique project managers
   const projectManagers = useMemo(() => {
@@ -48,30 +70,56 @@ export function FilterDialog({ open, onOpenChange }: FilterDialogProps) {
     return new Date(dateString);
   };
 
+  const handleProjectManagerChange = (value: string) => {
+    setLocalFilters((prev) => ({
+      ...prev,
+      projectManager: value === 'all' ? null : value,
+    }));
+  };
+
   const handleStartDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const start = parseDateFromInput(e.target.value);
-    setDateRangeFilter({
-      start,
-      end: filters.dateRange.end,
-    });
+    setLocalFilters((prev) => ({
+      ...prev,
+      dateRange: {
+        ...prev.dateRange,
+        start,
+      },
+    }));
   };
 
   const handleEndDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const end = parseDateFromInput(e.target.value);
-    setDateRangeFilter({
-      start: filters.dateRange.start,
-      end,
-    });
+    setLocalFilters((prev) => ({
+      ...prev,
+      dateRange: {
+        ...prev.dateRange,
+        end,
+      },
+    }));
+  };
+
+  const handleApplyFilters = () => {
+    // Apply local filters to store
+    setProjectManagerFilter(localFilters.projectManager);
+    setDateRangeFilter(localFilters.dateRange);
+    onOpenChange(false);
   };
 
   const handleClearFilters = () => {
+    // Clear local filters
+    setLocalFilters({
+      projectManager: null,
+      dateRange: { start: null, end: null },
+    });
+    // Also clear store filters
     clearFilters();
   };
 
   const hasActiveFilters =
-    filters.projectManager !== null ||
-    filters.dateRange.start !== null ||
-    filters.dateRange.end !== null;
+    localFilters.projectManager !== null ||
+    localFilters.dateRange.start !== null ||
+    localFilters.dateRange.end !== null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -88,10 +136,8 @@ export function FilterDialog({ open, onOpenChange }: FilterDialogProps) {
               Project Manager
             </label>
             <Select
-              value={filters.projectManager || 'all'}
-              onValueChange={(value: string) =>
-                setProjectManagerFilter(value === 'all' ? null : value)
-              }
+              value={localFilters.projectManager || 'all'}
+              onValueChange={handleProjectManagerChange}
             >
               <SelectTrigger id="project-manager" className="w-full">
                 <SelectValue placeholder="All managers" />
@@ -113,7 +159,7 @@ export function FilterDialog({ open, onOpenChange }: FilterDialogProps) {
             <Input
               id="start-date"
               type="date"
-              value={formatDateForInput(filters.dateRange.start)}
+              value={formatDateForInput(localFilters.dateRange.start)}
               onChange={handleStartDateChange}
             />
           </div>
@@ -124,7 +170,7 @@ export function FilterDialog({ open, onOpenChange }: FilterDialogProps) {
             <Input
               id="end-date"
               type="date"
-              value={formatDateForInput(filters.dateRange.end)}
+              value={formatDateForInput(localFilters.dateRange.end)}
               onChange={handleEndDateChange}
             />
           </div>
@@ -135,7 +181,7 @@ export function FilterDialog({ open, onOpenChange }: FilterDialogProps) {
               Clear Filters
             </Button>
           )}
-          <Button onClick={() => onOpenChange(false)}>Apply Filters</Button>
+          <Button onClick={handleApplyFilters}>Apply Filters</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

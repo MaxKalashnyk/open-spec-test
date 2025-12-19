@@ -1,0 +1,38 @@
+---
+description: Importing and using SVG icons, images, and Lucide icons in components
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# How to work with assets
+
+## Icons & Images
+
+### SVG Icons
+
+Import SVG files from `@/assets/icons/` using `?react` suffix:
+
+```typescript
+import Logo from '@/assets/icons/logo.svg?react';
+import SearchIcon from '@/assets/icons/search.svg?react';
+
+// Usage
+<SearchIcon />
+```
+
+### Images
+
+Import from `public/images/`:
+
+```typescript
+// Reference public images directly
+<img src="/images/Coin-Logo.png" alt="Logo" />
+```
+
+### Lucide Icons
+
+For common icons not in assets:
+
+```typescript
+import { Check, Loader2Icon, XIcon } from 'lucide-react';
+```

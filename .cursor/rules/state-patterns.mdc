@@ -1,0 +1,33 @@
+---
+description: Zustand store patterns, state management strategies, and when to use different state solutions
+globs:
+  - **/modules/**/stores/**/*.{ts,tsx}
+  - **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# State Management
+
+## Zustand Stores
+
+```typescript
+// modules/moduleName/stores/store-name.ts
+import { create } from 'zustand';
+
+type StoreState = {
+  value: string;
+  setValue: (value: string) => void;
+};
+
+export const useStore = create<StoreState>((set) => ({
+  value: '',
+  setValue: (value) => set({ value }),
+}));
+```
+
+## When to Use State Management
+
+- Local state: useState for component-specific state
+- Form state: React Hook Form
+- Server state: React Query
+- Global state: Zustand for auth, user preferences, etc.

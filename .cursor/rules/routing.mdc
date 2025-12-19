@@ -1,0 +1,43 @@
+---
+description: React Router configuration, route definitions, protected routes, and navigation patterns
+globs:
+  - **/router/**/*.{ts,tsx}
+  - **/modules/common/constants/routes.ts
+  - **/pages/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# How to work with the router setup
+
+## Route Definitions
+
+Define routes in `@/modules/common/constants/routes.ts`:
+
+```typescript
+export enum Routes {
+  Home = '/',
+  Dashboard = '/dashboard',
+  ProjectDetails = '/project/:id',
+}
+```
+
+## Route Usage
+
+```typescript
+import { Routes } from '@/modules/common/constants';
+import { Link, useNavigate } from 'react-router-dom';
+
+// In components
+<Link to={Routes.Dashboard}>Dashboard</Link>
+
+// Programmatic navigation
+const navigate = useNavigate();
+navigate(Routes.Dashboard);
+```
+
+## Protected Routes
+
+Use template components for route guards:
+
+- `AuthGuardTemplate` - requires authentication
+- `CanAccessTemplate` - role-based access control

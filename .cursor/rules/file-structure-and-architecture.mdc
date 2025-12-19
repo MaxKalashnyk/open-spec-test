@@ -1,0 +1,91 @@
+---
+description: Modular architecture patterns, directory structure, and component organization guidelines
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Modular Architecture
+
+- follow this modular architecture pattern:
+
+```bash
+src/
+├── pages/                         # Route-level components wrapping templates
+│   ├── crm/, partners/, home/     # Feature-based page routes
+│   └── index.ts                   # Barrel export
+├── modules/                       # Feature-based modules
+│   ├── common/                    # Shared components, hooks, utils, templates
+│   │   ├── components/            # Reusable form controls & UI components
+│   │   ├── constants/             # Routes, validations, regex, etc.
+│   │   ├── hooks/                 # Shared custom hooks
+│   │   ├── templates/             # Layout templates (dashboard, main, etc.)
+│   │   └── index.ts
+│   └── feature-name/              # Example: account, partners, projects
+│       ├── components/            # Feature components (flat structure)
+│       │   ├── component-name.tsx # Direct component files
+│       │   └── index.ts           # Export: export * from './component-name'
+│       ├── templates/             # Feature-specific templates
+│       │   ├── template-name.tsx
+│       │   └── index.ts
+│       ├── hooks/                 # Feature hooks
+│       │   ├── use-hook-name.ts
+│       │   └── index.ts
+│       ├── api/                   # API layer
+│       │   └── index.ts           # export const useFeatureApi = () => {...}
+│       ├── stores/                # Zustand stores
+│       │   ├── store-name.ts
+│       │   └── index.ts
+│       ├── types/                 # Feature-specific types
+│       │   └── index.ts
+│       ├── utils/                 # Feature utilities
+│       │   ├── util-name.ts
+│       │   └── index.ts
+│       └── index.ts               # Module barrel export
+├── components/ui/                 # shadcn/ui primitives (button, input, etc.)
+├── assets/icons/                  # SVG icons imported with ?react
+├── router/                        # React Router configuration
+├── utils/                         # Global utilities (process-api-error, etc.)
+├── services/open-api/             # Auto-generated API types & schemas
+└── lib/                           # Utility functions (cn(), etc.)
+```
+
+## Key Directories
+
+- **`pages/`**: Route-level page components
+  - Pages should be simple wrappers that use templates
+  - Example: `export function PartnerDashboard() { return <DashboardTemplate><PartnerDashboardTemplate /></DashboardTemplate>; }`
+  - Organized by feature: `crm/`, `partners/`, `home/`, etc.
+- **`modules/`**: Feature-based modules with self-contained logic
+  - Each module contains its own components, hooks, API, stores, utils
+  - `common/` module contains shared utilities used across features
+- **`modules/common/components/`**: Reusable controlled form components
+  - TextField, CustomCheckbox, CustomRadioGroup, FileUpload, ButtonLoading, etc.
+- **`components/ui/`**: shadcn/ui primitives (Button, Input, Dialog, etc.)
+- **`assets/icons/`**: SVG icon files (import with `?react` suffix)
+- **`utils/`**: Global utility functions (process-api-error, scrollToError, etc.)
+- **`services/open-api/`**: Auto-generated API types, schemas, and client
+- **`router/`**: React Router configuration with route guards
+
+## Component Organization
+
+**Default Pattern (Flat Structure)**:
+
+- Most components are placed directly in the components folder
+- File: `components/component-name.tsx`
+- Export in `components/index.ts`: `export * from './component-name'`
+
+**Nested Folders (Special Cases)**:
+
+- Use nested folders only for grouped/related components
+- Example: `components/kanban/` with `card.tsx`, `view.tsx`, `container.tsx`
+- Example: `components/steps/` with `overview.tsx`, `launch-plan.tsx`, etc.
+- Each nested folder has its own `index.ts` for exports
+
+## Index Files
+
+Always create `index.ts` files to export module contents:
+
+```typescript
+export * from './component-name';
+export * from './another-component';
+```

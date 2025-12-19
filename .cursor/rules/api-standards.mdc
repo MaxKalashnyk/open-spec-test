@@ -1,0 +1,107 @@
+---
+description: API client setup, query hooks, mutation patterns, and React Query integration standards
+globs:
+  - **/modules/**/api/**/*.{ts,tsx}
+  - **/modules/**/hooks/use-*.{ts,tsx}
+alwaysApply: false
+---
+
+# API Client Setup
+
+Use the custom `useApiClient` hook which includes:
+
+- Automatic auth token injection
+- Error handling and toast notifications
+- Token refresh on 401 errors
+
+## API Layer Pattern
+
+```typescript
+// modules/moduleName/api/index.ts
+import { useApiClient } from '@/modules/common/hooks/use-api-client';
+import {
+  ApiRequestType,
+  ApiResponseType,
+} from '@/services/open-api/customApiSchemas';
+
+export const useModuleApi = () => {
+  const api = useApiClient();
+
+  return {
+    getAll: async () => {
+      const res = await api.get<ApiResponseType[]>('/endpoint');
+      return res.data;
+    },
+    getById: async (id: string) => {
+      const res = await api.get<ApiResponseType>(`/endpoint/${id}`);
+      return res.data;
+    },
+    create: async (data: ApiRequestType) => {
+      const res = await api.post<ApiResponseType>('/endpoint', data);
+      return res.data;
+    },
+    update: async (id: string, data: ApiRequestType) => {
+      const res = await api.patch<ApiResponseType>(`/endpoint/${id}`, data);
+      return res.data;
+    },
+  };
+};
+```
+
+## Query Hooks Pattern
+
+```typescript
+// modules/moduleName/hooks/use-get-data.ts
+import { useQuery } from '@tanstack/react-query';
+
+import { useModuleApi } from '../api';
+
+export const dataQueryKey = 'data-key';
+
+export const useGetData = () => {
+  const { getData } = useModuleApi();
+
+  return useQuery({
+    queryKey: [dataQueryKey],
+    queryFn: getData,
+  });
+};
+```
+
+## Mutation Hooks Pattern
+
+```typescript
+// modules/moduleName/hooks/use-update-data.ts
+import { useMutation } from '@tanstack/react-query';
+
+import { UpdateDataDto } from '@/services/open-api/customApiSchemas';
+
+import { useModuleApi } from '../api';
+
+export const useUpdateData = ({ id }: { id: string }) => {
+  const { update } = useModuleApi();
+
+  const { mutateAsync: updateData, isPending } = useMutation({
+    mutationFn: (data: UpdateDataDto) => update(id, data),
+  });
+
+  const handleUpdate = async (data: UpdateDataDto) => {
+    try {
+      const result = await updateData(data);
+
+      if (!result) {
+        throw new Error('Update failed.');
+      }
+
+      return { success: true, data: result };
+    } catch (error: any) {
+      return { success: false, error: error?.message || 'Unknown error' };
+    }
+  };
+
+  return {
+    handleUpdate,
+    isLoading: isPending,
+  };
+};
+```

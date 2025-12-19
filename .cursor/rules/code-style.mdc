@@ -1,0 +1,111 @@
+---
+description: Naming conventions, component patterns, import organization, and code style guidelines
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# How to work with code style and naming conventions
+
+## Variables
+
+- Use camelCase for variables: `const userName = ...`
+- Use descriptive names that clearly indicate purpose
+- Boolean variables should use `is`, `has`, or `should` prefix: `isLoading`, `hasError`, `shouldRender`
+
+## Functions
+
+- Use camelCase for function names: `handleSubmit`, `getUserData`
+- Use verb prefixes: `get`, `set`, `handle`, `on`, `fetch`, `update`, `create`, `delete`
+- Event handlers should use `handle` or `on` prefix: `handleClick`, `onSubmit`
+
+## Components
+
+- Use PascalCase for component names: `AccountSettingsForm`, `TextField`, `ButtonLoading`
+- File names should match component names: `account-settings-form.tsx` for `AccountSettingsForm`
+- Use kebab-case for file names: `account-settings-form.tsx`, `use-get-me.ts`
+- Use existing components: check `@/modules/common/components` before creating new ones
+- Hooks for logic: separate business logic from UI
+- Minimize changes: adjust only what is necessary for the current request
+- Limit scope: focus solely on user asks without drive-by improvements
+- Understand context: review related files and code before proposing edits
+- Start with research: read existing implementation prior to suggesting modifications
+
+## Component Definition Pattern
+
+```typescript
+// 1. Define props type
+type ComponentNameProps = {
+  onSubmit: (data: SomeApiType) => Promise<void>;
+  isLoading?: boolean;
+};
+
+// 2. Export component
+export function ComponentName({ onSubmit, isLoading }: ComponentNameProps) {
+  // Component logic
+}
+```
+
+## Follow Component Types
+
+- Container Components: Logic-heavy components that manage state and data fetching
+- Presentational Components: UI-focused components with minimal logic
+- Form Components: Use controlled components from `@/modules/common` like TextField, CustomCheckbox, etc.
+
+## Avoid Re-renders
+
+- Use `React.memo()` for expensive components
+- Use `useMemo()` and `useCallback()` appropriately
+- Keep state as local as possible
+- Use ref for values that don't need to trigger re-renders
+
+## Comments
+
+- Use comments **only** for important or unclear logic
+- Write comments in **English** only
+- Self-documenting code is preferred over comments
+
+## Follow the DRY Principle
+
+- Extract repeated logic into utility functions in `utils/`
+- Create shared hooks for common patterns
+- Use common components instead of duplicating
+
+## Import Organization
+
+- follow this hierarchy of imports:
+
+1. External imports (React, libraries)
+2. Internal absolute imports (using `@/`)
+3. Relative imports
+4. Style imports
+
+Example:
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+
+import { Button } from '@/components/ui/button';
+import { useApiClient } from '@/modules/common/hooks/use-api-client';
+
+import { LocalComponent } from './local-component';
+```
+
+## Path Aliases
+
+- Use `@/` for absolute imports:
+
+```typescript
+import { Button } from '@/components/ui/button';
+import { useApiClient } from '@/modules/common/hooks/use-api-client';
+```
+
+## Async Operations
+
+```typescript
+// Good
+const data = await fetchData();
+
+// Avoid
+fetchData().then(data => { ... });
+```

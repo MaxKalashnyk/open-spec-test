@@ -1,0 +1,54 @@
+---
+description: TypeScript best practices, type definitions, API schema types, and strict typing guidelines
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# How to work with TypeScript
+
+## Generic rules
+
+- Avoid generic types like `Any`, `unknown`, or `List[Dict[str, Any]]`
+- Use PascalCase for type and interface names
+- Reuse the existing types as much as possible and before creation new types or interfaces check if it already exists
+- Use strict typing everywhere - function returns, variables, collections
+- Avoid untyped variables and generic types
+- Component props type should be: `ComponentNameProps`
+- API request/response types come from: `@/services/open-api/customApiSchemas`
+
+Example:
+
+```typescript
+type AccountSettingsFormProps = {
+  onSubmit: (data: UpdateAffiliateAccountRequest) => Promise<void>;
+  isLoading?: boolean;
+};
+
+export function AccountSettingsForm({
+  onSubmit,
+  isLoading,
+}: AccountSettingsFormProps) {
+  // Component implementation
+}
+```
+
+## Use API Schema Types
+
+Always import types from the OpenAPI schema:
+
+```typescript
+import {
+  AffiliateAccountResponse,
+  ProjectDto,
+  UpdateAffiliateAccountRequest,
+} from '@/services/open-api/customApiSchemas';
+```
+
+## Type Inference
+
+Let TypeScript infer types from Zod schemas:
+
+```typescript
+const formSchema = z.object({ ... });
+type FormValues = z.infer<typeof formSchema>;
+```
